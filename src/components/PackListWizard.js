@@ -11,7 +11,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import FastfoodIcon from '@mui/icons-material/Fastfood';
 import CheckroomIcon from '@mui/icons-material/Checkroom';
-import KitchenIcon from '@mui/icons-material/Kitchen';
+import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import HotelIcon from '@mui/icons-material/Hotel';
 import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices';
 import CategoryListCard from './CategoryListCard';
@@ -533,7 +533,7 @@ export default function PackListWizard() {
             >
               <Tab icon={<FastfoodIcon />} label={isMobile ? '' : 'Food'} />
               <Tab icon={<CheckroomIcon />} label={isMobile ? '' : 'Clothing'} />
-              <Tab icon={<KitchenIcon />} label={isMobile ? '' : 'Cooking'} />
+              <Tab icon={<RestaurantMenuIcon />} label={isMobile ? '' : 'Cooking'} />
               <Tab icon={<HotelIcon />} label={isMobile ? '' : 'Sleeping'} />
               <Tab icon={<MiscellaneousServicesIcon />} label={isMobile ? '' : 'Misc'} disabled={step < 4} />
             </Tabs>
