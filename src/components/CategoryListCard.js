@@ -10,7 +10,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 
-export default function CategoryListCard({ title, list, type }) {
+export default function CategoryListCard({ title, list, type, cardWidth }) {
   if (!list) return null;
 
   // Food category: render by day and meal
@@ -24,7 +24,7 @@ export default function CategoryListCard({ title, list, type }) {
       { key: 'calories', label: 'Calories', align: 'right' },
     ];
     return (
-      <Card sx={{ mb: 3, width: { xs: '100%', sm: '500px', md: '600px' }, maxWidth: '100%' }}>
+      <Card sx={{ mb: 3, width: cardWidth || { xs: '100%', sm: '95vw', md: '650px', lg: '900px' }, maxWidth: '100%' }}>
         <CardContent>
           <Typography variant="h6" sx={{ mb: 2 }}>{title}</Typography>
           {list.items.map((dayObj, i) => (
@@ -34,26 +34,75 @@ export default function CategoryListCard({ title, list, type }) {
                 <Table size="small">
                   <TableHead>
                     <TableRow>
-                    {foodColumns.map(col => (
-                      <TableCell
-                        key={col.key}
-                        align={col.align}
-                        sx={{ whiteSpace: 'nowrap', py: 1, px: 2 }}
-                      >
-                        <strong>{col.label}</strong>
-                      </TableCell>
-                    ))}
+                      {foodColumns.map(col => (
+                        <TableCell
+                          key={col.key}
+                          align={col.align}
+                          sx={{
+                            whiteSpace: 'nowrap',
+                            py: { xs: 0.5, sm: 1 },
+                            px: { xs: 0.5, sm: 2 },
+                            fontSize: { xs: '0.80rem', sm: '0.95rem' },
+                            minWidth: 0,
+                            maxWidth: { xs: 60, sm: 120 },
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          <strong>{col.label}</strong>
+                        </TableCell>
+                      ))}
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {['Breakfast', 'Lunch', 'Snack', 'Dinner'].map(meal => (
                       dayObj[meal] ? (
                         <TableRow key={meal}>
-                          <TableCell>{meal}</TableCell>
-                          <TableCell sx={{ py: 1, px: 2 }}>{dayObj[meal].Item}</TableCell>
-                          <TableCell align="right">{dayObj[meal].Weight}</TableCell>
-                          <TableCell align="right">{dayObj[meal].Price}</TableCell>
-                          <TableCell align="right">{dayObj[meal].Calories}</TableCell>
+                          <TableCell sx={{
+                            py: { xs: 0.5, sm: 1 },
+                            px: { xs: 0.5, sm: 2 },
+                            fontSize: { xs: '0.80rem', sm: '0.95rem' },
+                            minWidth: 0,
+                            maxWidth: { xs: 60, sm: 120 },
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}>{meal}</TableCell>
+                          <TableCell sx={{
+                            py: { xs: 0.5, sm: 1 },
+                            px: { xs: 0.5, sm: 2 },
+                            fontSize: { xs: '0.80rem', sm: '0.95rem' },
+                            minWidth: 0,
+                            maxWidth: { xs: 60, sm: 120 },
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}>{dayObj[meal].Item}</TableCell>
+                          <TableCell align="right" sx={{
+                            py: { xs: 0.5, sm: 1 },
+                            px: { xs: 0.5, sm: 2 },
+                            fontSize: { xs: '0.80rem', sm: '0.95rem' },
+                            minWidth: 0,
+                            maxWidth: { xs: 60, sm: 120 },
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}>{dayObj[meal].Weight}</TableCell>
+                          <TableCell align="right" sx={{
+                            py: { xs: 0.5, sm: 1 },
+                            px: { xs: 0.5, sm: 2 },
+                            fontSize: { xs: '0.80rem', sm: '0.95rem' },
+                            minWidth: 0,
+                            maxWidth: { xs: 60, sm: 120 },
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}>{dayObj[meal].Price}</TableCell>
+                          <TableCell align="right" sx={{
+                            py: { xs: 0.5, sm: 1 },
+                            px: { xs: 0.5, sm: 2 },
+                            fontSize: { xs: '0.80rem', sm: '0.95rem' },
+                            minWidth: 0,
+                            maxWidth: { xs: 60, sm: 120 },
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}>{dayObj[meal].Calories}</TableCell>
                         </TableRow>
                       ) : null
                     ))}
@@ -81,10 +130,19 @@ export default function CategoryListCard({ title, list, type }) {
   ];
 
   // For non-clothing categories, ensure all columns have the same padding and alignment
-  const cellSx = { py: 1, px: 2, whiteSpace: 'nowrap' };
+  const cellSx = {
+    py: { xs: 0.5, sm: 1 },
+    px: { xs: 0.5, sm: 2 },
+    whiteSpace: 'nowrap',
+    fontSize: { xs: '0.80rem', sm: '0.95rem' },
+    minWidth: 0,
+    maxWidth: { xs: 60, sm: 120 },
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  };
 
   return (
-    <Card sx={{ mb: 3, width: { xs: '100%', sm: '500px', md: '600px' }, maxWidth: '100%' }}>
+    <Card sx={{ mb: 3, width: cardWidth || { xs: '100%', sm: '95vw', md: '650px', lg: '900px' }, maxWidth: '100%' }}>
       <CardContent>
         <Typography variant="h6" sx={{ mb: 2 }}>{title}</Typography>
         <TableContainer>

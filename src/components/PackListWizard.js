@@ -1,3 +1,12 @@
+import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import MenuIcon from '@mui/icons-material/Menu';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import FastfoodIcon from '@mui/icons-material/Fastfood';
@@ -38,6 +47,9 @@ const initialState = {
 };
 
 export default function PackListWizard() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [inputs, setInputs] = useState({
     age: '',
     weight: '',
@@ -376,27 +388,50 @@ export default function PackListWizard() {
             </CardContent>
           </Card>
           {/* Tabs for pack list categories */}
-          <Box sx={{ width: { xs: '100%', sm: '500px', md: '600px' }, mb: 2 }}>
+          <Box sx={{ width: { xs: '100%', sm: '650px', md: '900px' }, maxWidth: '100%', mb: 2, display: 'flex', justifyContent: 'center' }}>
             <Tabs
               value={listsTabIndex}
               onChange={(_, idx) => setListsTabIndex(idx)}
               variant="scrollable"
               scrollButtons="auto"
               aria-label="Pack List Category Tabs"
+              centered
+              sx={{
+                mx: 'auto',
+                minHeight: isMobile ? 36 : undefined,
+                width: isMobile ? '100%' : undefined,
+                maxWidth: '100%',
+                display: 'flex',
+                justifyContent: isMobile ? 'space-between' : 'center',
+                '& .MuiTab-root': {
+                  minWidth: isMobile ? '20vw' : undefined,
+                  flex: isMobile ? '1 1 0' : undefined,
+                  minHeight: isMobile ? 36 : undefined,
+                  px: isMobile ? 0.5 : 2,
+                  py: isMobile ? 0.5 : 1,
+                },
+                '& .MuiTabs-flexContainer': {
+                  width: '100%',
+                  justifyContent: isMobile ? 'space-between' : 'center',
+                },
+                '& .MuiTabs-indicator': {
+                  height: isMobile ? 2 : undefined,
+                },
+              }}
             >
-              <Tab icon={<FastfoodIcon />} label="Food" />
-              <Tab icon={<CheckroomIcon />} label="Clothing" />
-              <Tab icon={<KitchenIcon />} label="Cooking" />
-              <Tab icon={<HotelIcon />} label="Sleeping" />
-              <Tab icon={<MiscellaneousServicesIcon />} label="Misc" disabled={step < 4} />
+              <Tab icon={<FastfoodIcon />} label={isMobile ? '' : 'Food'} />
+              <Tab icon={<CheckroomIcon />} label={isMobile ? '' : 'Clothing'} />
+              <Tab icon={<KitchenIcon />} label={isMobile ? '' : 'Cooking'} />
+              <Tab icon={<HotelIcon />} label={isMobile ? '' : 'Sleeping'} />
+              <Tab icon={<MiscellaneousServicesIcon />} label={isMobile ? '' : 'Misc'} disabled={step < 4} />
             </Tabs>
           </Box>
           {/* Only show the selected tab's content */}
-          {listsTabIndex === 0 && <CategoryListCard title="Food List" list={lists.food} type="food" />}
-          {listsTabIndex === 1 && <CategoryListCard title="Clothing List" list={lists.clothing} type="clothing" />}
-          {listsTabIndex === 2 && <CategoryListCard title="Cooking List" list={lists.cooking} />}
-          {listsTabIndex === 3 && <CategoryListCard title="Sleeping List" list={lists.sleeping} />}
-          {listsTabIndex === 4 && step === 4 && <CategoryListCard title="Miscellaneous List" list={lists.misc} />}
+          {listsTabIndex === 0 && <CategoryListCard title="Food List" list={lists.food} type="food" cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
+          {listsTabIndex === 1 && <CategoryListCard title="Clothing List" list={lists.clothing} type="clothing" cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
+          {listsTabIndex === 2 && <CategoryListCard title="Cooking List" list={lists.cooking} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
+          {listsTabIndex === 3 && <CategoryListCard title="Sleeping List" list={lists.sleeping} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
+          {listsTabIndex === 4 && step === 4 && <CategoryListCard title="Miscellaneous List" list={lists.misc} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
           {step === 4 && (
             <Button variant="outlined" color="primary" sx={{ mt: 2 }}
               onClick={() => {
