@@ -1,3 +1,8 @@
+import CategoryListCard from './CategoryListCard';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 // PackListWizard.js
 import React, { useState } from 'react';
 import Tabs from '@mui/material/Tabs';
@@ -8,11 +13,7 @@ import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
 import Slider from '@mui/material/Slider';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Typography from '@mui/material/Typography';
 import { useOpenAIApi } from '../hooks/useOpenAIApi';
 import { validateInputs, getMaxBackpackWeight } from '../utils/validation';
 // ...existing code...
@@ -315,41 +316,52 @@ export default function PackListWizard() {
         </Box>
       )}
       {activePage === 'list' && (
-        <div className="results-view">
-          <h2>Pack Weight</h2>
-          <div><strong>Max Backpack Weight:</strong> {getMaxBackpackWeight(Number(inputs.age), Number(inputs.weight)).toFixed(1)} lbs</div>
-          {categoryWeights && (
-            <>
-              <h3>Category Weights</h3>
-              <ul>
-                <li>Clothing: {categoryWeights.clothingWeight} lbs</li>
-                <li>Cooking Equipment: {categoryWeights.cookingWeight} lbs</li>
-                <li>Sleeping: {categoryWeights.sleepingWeight} lbs</li>
-                <li>Food: {categoryWeights.foodWeight} lbs</li>
-                <li>Misc: {categoryWeights.miscWeight} lbs</li>
-              </ul>
-            </>
-          )}
+        <Box className="results-view" sx={{ mt: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Card sx={{ mb: 3, width: { xs: '100%', sm: '500px', md: '600px' }, maxWidth: '100%' }}>
+            <CardContent>
+              <Typography variant="h5" sx={{ mb: 2 }}>Pack Weight</Typography>
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                <strong>Max Backpack Weight:</strong> {getMaxBackpackWeight(Number(inputs.age), Number(inputs.weight)).toFixed(1)} lbs
+              </Typography>
+              {categoryWeights && (
+                <>
+                  <Typography variant="h6" sx={{ mb: 1 }}>Category Weights</Typography>
+                  <Box component="ul" sx={{ pl: 2, mb: 2 }}>
+                    <li>Clothing: {categoryWeights.clothingWeight} lbs</li>
+                    <li>Cooking Equipment: {categoryWeights.cookingWeight} lbs</li>
+                    <li>Sleeping: {categoryWeights.sleepingWeight} lbs</li>
+                    <li>Food: {categoryWeights.foodWeight} lbs</li>
+                    <li>Misc: {categoryWeights.miscWeight} lbs</li>
+                  </Box>
+                </>
+              )}
+            </CardContent>
+          </Card>
           {step >= 3 && (
             <>
-              <h3>Food List</h3>
-              <ul>{lists.food?.items?.map((item, i) => <li key={i}>{JSON.stringify(item)}</li>)}</ul>
-              <h3>Clothing List</h3>
-              <ul>{lists.clothing?.items?.map((item, i) => <li key={i}>{JSON.stringify(item)}</li>)}</ul>
-              <h3>Cooking List</h3>
-              <ul>{lists.cooking?.items?.map((item, i) => <li key={i}>{JSON.stringify(item)}</li>)}</ul>
-              <h3>Sleeping List</h3>
-              <ul>{lists.sleeping?.items?.map((item, i) => <li key={i}>{JSON.stringify(item)}</li>)}</ul>
+              <CategoryListCard title="Food List" list={lists.food} type="food" />
+              <CategoryListCard title="Clothing List" list={lists.clothing} />
+              <CategoryListCard title="Cooking List" list={lists.cooking} />
+              <CategoryListCard title="Sleeping List" list={lists.sleeping} />
             </>
           )}
           {step === 4 && (
             <>
-              <h3>Miscellaneous List</h3>
-              <ul>{lists.misc?.items?.map((item, i) => <li key={i}>{JSON.stringify(item)}</li>)}</ul>
-              <button onClick={() => { setActivePage('form'); setStep(1); setLists({ food: null, clothing: null, cooking: null, sleeping: null, misc: null }); setCategoryWeights(null); setInputs(initialState); }}>Start Over</button>
+              <CategoryListCard title="Miscellaneous List" list={lists.misc} />
+              <Button variant="outlined" color="primary" sx={{ mt: 2 }}
+                onClick={() => {
+                  setActivePage('form');
+                  setStep(1);
+                  setLists({ food: null, clothing: null, cooking: null, sleeping: null, misc: null });
+                  setCategoryWeights(null);
+                  setInputs(initialState);
+                }}>
+                Start Over
+              </Button>
             </>
           )}
-        </div>
+        </Box>
+
       )}
     </div>
   );
