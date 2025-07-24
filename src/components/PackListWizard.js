@@ -1,6 +1,6 @@
 // PackListWizard.js
 import React, { useState } from 'react';
-import { useGeminiApi } from '../hooks/useGeminiApi';
+import { useOpenAIApi } from '../hooks/useOpenAIApi';
 import { validateInputs, getMaxBackpackWeight } from '../utils/validation';
 // ...existing code...
 import { ToastContainer, toast } from 'react-toastify';
@@ -28,7 +28,7 @@ export default function PackListWizard() {
   const [errors, setErrors] = useState({});
   const [lists, setLists] = useState({ food: null, clothing: null, cooking: null, sleeping: null, misc: null });
   const [categoryWeights, setCategoryWeights] = useState(null);
-  const { fetchGeminiList, loading } = useGeminiApi();
+  const { fetchOpenAIList, loading } = useOpenAIApi();
   const [step, setStep] = useState(1);
 
   const handleChange = e => {
@@ -56,7 +56,7 @@ export default function PackListWizard() {
     // 2. Get category weights
     toast.info('Step 2: Getting category weights...');
     const distributionPrompt = `Provide a weight distribution for a ${params.days}-day backpacking list with a total weight as close to, but not exceeding ${maxWeight} pounds. The distribution MUST be in the following format: Clothing: xx pounds\nCooking Equipment: xx pounds\nSleeping: xx pounds\nFood: xx pounds\nMisc: xx pounds. DO NOT include any items in any of the categories in this list.`;
-    const distributionResponse = await fetchGeminiList(distributionPrompt, { description: 'Weight distribution as plain text', exampleJSON: {} });
+    const distributionResponse = await fetchOpenAIList(distributionPrompt, { description: 'Weight distribution as plain text', exampleJSON: {} });
 
     let clothingWeight = 0, cookingWeight = 0, sleepingWeight = 0, foodWeight = 0, miscWeight = 0;
     if (distributionResponse && typeof distributionResponse === 'string') {
@@ -79,6 +79,7 @@ export default function PackListWizard() {
     setCategoryWeights({ clothingWeight, cookingWeight, sleepingWeight, foodWeight, miscWeight });
     setStep(2);
 
+
     // 3. Generate 4 main lists in parallel
     toast.info('Step 3: Generating food, clothing, cooking, and sleeping lists...');
     const foodPrompt = `List the Food items and their weights for a ${params.days}-day backpacking trip. Targeting weight close to ${foodWeight} pounds, allowing ${(foodWeight/params.days).toFixed(2)} pounds of food daily. Food list must follow a ${params.diet} diet. Remove refrigeration-dependent items and streamline redundant foods. Output should be in this JSON format: { items:[{day:1,Breakfast:{Item:\"\",Weight:0,Price:0,Calories:0},Lunch:{Item:\"\",Weight:0,Price:0,Calories:0},Snack:{Item:\"\",Weight:0,Price:0,Calories:0},Dinner:{Item:\"\",Weight:0,Price:0,Calories:0}},...],totalWeight:0,totalPrice:0,totalCalories:0 } Weight MUST be in pounds and price MUST be in $USD. Generate food for ${params.days} days. String must start with { and end with } Ensure that the price values are represented as numerical values without any currency symbols.`;
@@ -86,12 +87,25 @@ export default function PackListWizard() {
     const cookingPrompt = `List cooking items, except pans and spatulas, for dehydrated meals using a camping stove. Recommend a specific burner/stove. Include a collapsible pot, like Jet Boil kit, with consistent details. Avoid vague items like 'camping stove with piezoelectric ignition'. Output should be in JSON in this format: {\"items\":[{\"item\":\"\",\"weight\":0,\"price\":0},...],\"totalWeight\":0,\"totalPrice\":0} Weight MUST be in pounds and price MUST be in $USD. All items need to be in the JSON object. totalWeight and totalPrice is required. String must start with { and end with } Ensure that the price values are represented as numerical values without any currency symbols.`;
     const sleepingPrompt = `Specify a season-suited sleeping bag temperature rating for Sierra Nevada elevations in ${params.season}. Include one sleeping bag, one sleeping pad, and a ${Number(params.tentCapacity) + 1}-person tent. Exclude eye masks and earplugs. Output should be in JSON in this format: {\"items\":[{\"item\":\"\",\"weight\":0,\"price\":0},...],\"totalWeight\":0,\"totalPrice\":0} Weight MUST be in pounds and price MUST be in $USD. All items need to be in the JSON object. totalWeight and totalPrice is required. String must start with { and end with } Ensure that the price values are represented as numerical values without any currency symbols.`;
 
+    console.log('Requesting food list...');
+    const foodPromise = fetchOpenAIList(foodPrompt, require('../utils/listGenerators').foodListSchema);
+    console.log('Requesting clothing list...');
+    const clothingPromise = fetchOpenAIList(clothingPrompt, require('../utils/listGenerators').clothingListSchema);
+    console.log('Requesting cooking list...');
+    const cookingPromise = fetchOpenAIList(cookingPrompt, require('../utils/listGenerators').cookingListSchema);
+    console.log('Requesting sleeping list...');
+    const sleepingPromise = fetchOpenAIList(sleepingPrompt, require('../utils/listGenerators').sleepingListSchema);
+
     const [food, clothing, cooking, sleeping] = await Promise.all([
-      fetchGeminiList(foodPrompt, require('../utils/listGenerators').foodListSchema),
-      fetchGeminiList(clothingPrompt, require('../utils/listGenerators').clothingListSchema),
-      fetchGeminiList(cookingPrompt, require('../utils/listGenerators').cookingListSchema),
-      fetchGeminiList(sleepingPrompt, require('../utils/listGenerators').sleepingListSchema)
+      foodPromise,
+      clothingPromise,
+      cookingPromise,
+      sleepingPromise
     ]);
+    console.log('Received food list:', food);
+    console.log('Received clothing list:', clothing);
+    console.log('Received cooking list:', cooking);
+    console.log('Received sleeping list:', sleeping);
 
     setLists(lists => ({ ...lists, food, clothing, cooking, sleeping }));
     setStep(3);
@@ -99,7 +113,9 @@ export default function PackListWizard() {
     // 4. Generate misc list
     toast.info('Step 4: Generating miscellaneous list...');
     const miscPrompt = `List additional items for a ${params.days}-day backpacking trip, aiming for weight near ${miscWeight} lbs (min. ${(0.9 * miscWeight).toFixed(2)} lbs). Exclude clothing, cooking, sleeping, and food from previous lists. Output should be in this JSON format: {\"items\":[{\"item\":\"\",\"weight\":0,\"price\":0},...],\"totalWeight\":0,\"totalPrice\":0} Weight MUST be in pounds and price MUST be in $USD.`;
-    const misc = await fetchGeminiList(miscPrompt, require('../utils/listGenerators').miscListSchema);
+    console.log('Requesting misc list...');
+    const misc = await fetchOpenAIList(miscPrompt, require('../utils/listGenerators').miscListSchema);
+    console.log('Received misc list:', misc);
     setLists(lists => ({ ...lists, misc }));
     setStep(4);
     toast.success('Pack lists generated!');
