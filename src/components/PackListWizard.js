@@ -258,10 +258,18 @@ export default function PackListWizard() {
   return (
     <div className="packlist-wizard">
       <ToastContainer />
-      <Tabs value={tabIndex} onChange={(_, idx) => setActivePage(idx === 0 ? 'form' : 'list')} aria-label="Pack List Wizard Tabs">
-        <Tab label="User Form" />
-        <Tab label="Pack Lists" />
-      </Tabs>
+      <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+        <Tabs
+          value={tabIndex}
+          onChange={(_, idx) => setActivePage(idx === 0 ? 'form' : 'list')}
+          aria-label="Pack List Wizard Tabs"
+          centered
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
+          <Tab label="User Form" />
+          <Tab label="Pack Lists" />
+        </Tabs>
+      </Box>
       {activePage === 'form' && (
         <Box component="form" onSubmit={handleSubmit} className="wizard-form"
           sx={{
