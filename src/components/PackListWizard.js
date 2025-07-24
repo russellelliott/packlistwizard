@@ -1,3 +1,10 @@
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import FastfoodIcon from '@mui/icons-material/Fastfood';
+import CheckroomIcon from '@mui/icons-material/Checkroom';
+import KitchenIcon from '@mui/icons-material/Kitchen';
+import HotelIcon from '@mui/icons-material/Hotel';
+import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices';
 import CategoryListCard from './CategoryListCard';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -5,8 +12,6 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 // PackListWizard.js
 import React, { useState } from 'react';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
@@ -46,6 +51,8 @@ export default function PackListWizard() {
   const [step, setStep] = useState(1);
   const [activePage, setActivePage] = useState('form');
   const tabIndex = activePage === 'form' ? 0 : 1;
+  // Add state for pack list tabs
+  const [listsTabIndex, setListsTabIndex] = useState(0);
 
   const handleChange = e => {
     const { name, value, type } = e.target;
@@ -101,7 +108,7 @@ export default function PackListWizard() {
     // 3. Generate 4 main lists in parallel
     toast.info('Step 3: Generating food, clothing, cooking, and sleeping lists...');
     const foodPrompt = `List the Food items and their weights for a ${params.days}-day backpacking trip. Targeting weight close to ${foodWeight} pounds, allowing ${(foodWeight/params.days).toFixed(2)} pounds of food daily. Food list must follow a ${params.diet} diet. Remove refrigeration-dependent items and streamline redundant foods. Output should be in this JSON format: { items:[{day:1,Breakfast:{Item:\"\",Weight:0,Price:0,Calories:0},Lunch:{Item:\"\",Weight:0,Price:0,Calories:0},Snack:{Item:\"\",Weight:0,Price:0,Calories:0},Dinner:{Item:\"\",Weight:0,Price:0,Calories:0}},...],totalWeight:0,totalPrice:0,totalCalories:0 } Weight MUST be in pounds and price MUST be in $USD. Generate food for ${params.days} days. String must start with { and end with } Ensure that the price values are represented as numerical values without any currency symbols.`;
-    const clothingPrompt = `List the Clothing items and their weights for a ${params.days}-day backpacking trip. Aim for a total weight near ${clothingWeight} pounds, minimum ${(0.9 * clothingWeight).toFixed(2)} pounds. Elevation: avg ${params.avgElevation} ft, max ${params.maxElevation} ft in ${params.season}. Provide clothing items suitable for average ${params.avgElevation} ft and max ${params.maxElevation} ft elevation in ${params.season}. Include 3 shirts, underwear, and socks, all same type. Exclude gender-specific items like tank tops and sports bras. Output should be in JSON in this format: {\"items\":[{\"item\":\"\",\"weight\":0,\"price\":0},...],\"totalWeight\":0,\"totalPrice\":0} Weight MUST be in pounds and price MUST be in $USD. All items need to be in the JSON object. totalWeight and totalPrice is required. String must start with { and end with } Ensure that the price values are represented as numerical values without any currency symbols.`;
+    const clothingPrompt = `List the Clothing items and their weights for a ${params.days}-day backpacking trip. Aim for a total weight near ${clothingWeight} pounds, minimum ${(0.9 * clothingWeight).toFixed(2)} pounds. Elevation: avg ${params.avgElevation} ft, max ${params.maxElevation} ft in ${params.season}. Provide clothing items suitable for average ${params.avgElevation} ft and max ${params.maxElevation} ft elevation in ${params.season}. Include 3 shirts, underwear, and socks, all same type. Exclude gender-specific items like tank tops and sports bras. Output should be in JSON in this format: {"items":[{"item":"","weight":0,"price":0,"quantity":1},...],"totalWeight":0,"totalPrice":0} Each item must include a quantity field (e.g., quantity: 3 for 3 shirts). Do not list the same item multiple times; instead, use the quantity field. Weight MUST be in pounds and price MUST be in $USD. All items need to be in the JSON object. totalWeight and totalPrice is required. String must start with { and end with } Ensure that the price values are represented as numerical values without any currency symbols.`;
     const cookingPrompt = `List cooking items, except pans and spatulas, for dehydrated meals using a camping stove. Recommend a specific burner/stove. Include a collapsible pot, like Jet Boil kit, with consistent details. Avoid vague items like 'camping stove with piezoelectric ignition'. Output should be in JSON in this format: {\"items\":[{\"item\":\"\",\"weight\":0,\"price\":0},...],\"totalWeight\":0,\"totalPrice\":0} Weight MUST be in pounds and price MUST be in $USD. All items need to be in the JSON object. totalWeight and totalPrice is required. String must start with { and end with } Ensure that the price values are represented as numerical values without any currency symbols.`;
     const sleepingPrompt = `Specify a season-suited sleeping bag temperature rating for Sierra Nevada elevations in ${params.season}. Include one sleeping bag, one sleeping pad, and a ${Number(params.tentCapacity) + 1}-person tent. Exclude eye masks and earplugs. Output should be in JSON in this format: {\"items\":[{\"item\":\"\",\"weight\":0,\"price\":0},...],\"totalWeight\":0,\"totalPrice\":0} Weight MUST be in pounds and price MUST be in $USD. All items need to be in the JSON object. totalWeight and totalPrice is required. String must start with { and end with } Ensure that the price values are represented as numerical values without any currency symbols.`;
 
@@ -337,31 +344,42 @@ export default function PackListWizard() {
               )}
             </CardContent>
           </Card>
-          {step >= 3 && (
-            <>
-              <CategoryListCard title="Food List" list={lists.food} type="food" />
-              <CategoryListCard title="Clothing List" list={lists.clothing} />
-              <CategoryListCard title="Cooking List" list={lists.cooking} />
-              <CategoryListCard title="Sleeping List" list={lists.sleeping} />
-            </>
-          )}
+          {/* Tabs for pack list categories */}
+          <Box sx={{ width: { xs: '100%', sm: '500px', md: '600px' }, mb: 2 }}>
+            <Tabs
+              value={listsTabIndex}
+              onChange={(_, idx) => setListsTabIndex(idx)}
+              variant="scrollable"
+              scrollButtons="auto"
+              aria-label="Pack List Category Tabs"
+            >
+              <Tab icon={<FastfoodIcon />} label="Food" />
+              <Tab icon={<CheckroomIcon />} label="Clothing" />
+              <Tab icon={<KitchenIcon />} label="Cooking" />
+              <Tab icon={<HotelIcon />} label="Sleeping" />
+              <Tab icon={<MiscellaneousServicesIcon />} label="Misc" disabled={step < 4} />
+            </Tabs>
+          </Box>
+          {/* Only show the selected tab's content */}
+          {listsTabIndex === 0 && <CategoryListCard title="Food List" list={lists.food} type="food" />}
+          {listsTabIndex === 1 && <CategoryListCard title="Clothing List" list={lists.clothing} />}
+          {listsTabIndex === 2 && <CategoryListCard title="Cooking List" list={lists.cooking} />}
+          {listsTabIndex === 3 && <CategoryListCard title="Sleeping List" list={lists.sleeping} />}
+          {listsTabIndex === 4 && step === 4 && <CategoryListCard title="Miscellaneous List" list={lists.misc} />}
           {step === 4 && (
-            <>
-              <CategoryListCard title="Miscellaneous List" list={lists.misc} />
-              <Button variant="outlined" color="primary" sx={{ mt: 2 }}
-                onClick={() => {
-                  setActivePage('form');
-                  setStep(1);
-                  setLists({ food: null, clothing: null, cooking: null, sleeping: null, misc: null });
-                  setCategoryWeights(null);
-                  setInputs(initialState);
-                }}>
-                Start Over
-              </Button>
-            </>
+            <Button variant="outlined" color="primary" sx={{ mt: 2 }}
+              onClick={() => {
+                setActivePage('form');
+                setStep(1);
+                setLists({ food: null, clothing: null, cooking: null, sleeping: null, misc: null });
+                setCategoryWeights(null);
+                setInputs(initialState);
+                setListsTabIndex(0);
+              }}>
+              Start Over
+            </Button>
           )}
         </Box>
-
       )}
     </div>
   );
