@@ -150,7 +150,38 @@ export default function PackListWizard() {
     console.log('Received cooking list:', cooking);
     console.log('Received sleeping list:', sleeping);
 
-    setLists(lists => ({ ...lists, food, clothing, cooking, sleeping }));
+    // Recalculate totals for each list
+    function recalcTotals(list, type) {
+      if (!list || !Array.isArray(list.items)) return list;
+      let totalWeight = 0, totalPrice = 0, totalCalories = 0;
+      if (type === 'food') {
+        list.items.forEach(dayObj => {
+          ['Breakfast', 'Lunch', 'Snack', 'Dinner'].forEach(meal => {
+            if (dayObj[meal]) {
+              totalWeight += parseFloat(dayObj[meal].Weight) || 0;
+              totalPrice += parseFloat(dayObj[meal].Price) || 0;
+              totalCalories += parseFloat(dayObj[meal].Calories) || 0;
+            }
+          });
+        });
+        return { ...list, totalWeight: Number(totalWeight.toFixed(2)), totalPrice: Number(totalPrice.toFixed(2)), totalCalories: Math.round(totalCalories) };
+      } else {
+        list.items.forEach(item => {
+          const qty = item.quantity !== undefined ? Number(item.quantity) : 1;
+          totalWeight += (parseFloat(item.weight ?? item.Weight) || 0) * qty;
+          totalPrice += (parseFloat(item.price ?? item.Price) || 0) * qty;
+        });
+        return { ...list, totalWeight: Number(totalWeight.toFixed(2)), totalPrice: Number(totalPrice.toFixed(2)) };
+      }
+    }
+
+    setLists(lists => ({
+      ...lists,
+      food: recalcTotals(food, 'food'),
+      clothing: recalcTotals(clothing, 'clothing'),
+      cooking: recalcTotals(cooking, 'cooking'),
+      sleeping: recalcTotals(sleeping, 'sleeping'),
+    }));
     setStep(3);
 
     // 4. Generate misc list
@@ -159,10 +190,70 @@ export default function PackListWizard() {
     console.log('Requesting misc list...');
     const misc = await fetchOpenAIList(miscPrompt, require('../utils/listGenerators').miscListSchema);
     console.log('Received misc list:', misc);
-    setLists(lists => ({ ...lists, misc }));
+    setLists(lists => {
+      const recalcTotals = (list, type) => {
+        if (!list || !Array.isArray(list.items)) return list;
+        let totalWeight = 0, totalPrice = 0, totalCalories = 0;
+        if (type === 'food') {
+          list.items.forEach(dayObj => {
+            ['Breakfast', 'Lunch', 'Snack', 'Dinner'].forEach(meal => {
+              if (dayObj[meal]) {
+                totalWeight += parseFloat(dayObj[meal].Weight) || 0;
+                totalPrice += parseFloat(dayObj[meal].Price) || 0;
+                totalCalories += parseFloat(dayObj[meal].Calories) || 0;
+              }
+            });
+          });
+          return { ...list, totalWeight: Number(totalWeight.toFixed(2)), totalPrice: Number(totalPrice.toFixed(2)), totalCalories: Math.round(totalCalories) };
+        } else {
+          list.items.forEach(item => {
+            const qty = item.quantity !== undefined ? Number(item.quantity) : 1;
+            totalWeight += (parseFloat(item.weight ?? item.Weight) || 0) * qty;
+            totalPrice += (parseFloat(item.price ?? item.Price) || 0) * qty;
+          });
+          return { ...list, totalWeight: Number(totalWeight.toFixed(2)), totalPrice: Number(totalPrice.toFixed(2)) };
+        }
+      };
+      return {
+        ...lists,
+        misc: recalcTotals(misc, 'misc'),
+      };
+    });
     setStep(4);
     toast.success('Pack lists generated!');
   };
+
+  // --- Recalculate actual totals for each list from items, for summary table and list totals ---
+  function recalcTotals(list, type) {
+    if (!list || !Array.isArray(list.items)) return { totalWeight: 0, totalPrice: 0, totalCalories: 0, ...list };
+    let totalWeight = 0, totalPrice = 0, totalCalories = 0;
+    if (type === 'food') {
+      list.items.forEach(dayObj => {
+        ['Breakfast', 'Lunch', 'Snack', 'Dinner'].forEach(meal => {
+          if (dayObj[meal]) {
+            totalWeight += parseFloat(dayObj[meal].Weight) || 0;
+            totalPrice += parseFloat(dayObj[meal].Price) || 0;
+            totalCalories += parseFloat(dayObj[meal].Calories) || 0;
+          }
+        });
+      });
+      return { ...list, totalWeight: Number(totalWeight.toFixed(2)), totalPrice: Number(totalPrice.toFixed(2)), totalCalories: Math.round(totalCalories) };
+    } else {
+      list.items.forEach(item => {
+        const qty = item.quantity !== undefined ? Number(item.quantity) : 1;
+        totalWeight += (parseFloat(item.weight ?? item.Weight) || 0) * qty;
+        totalPrice += (parseFloat(item.price ?? item.Price) || 0) * qty;
+      });
+      return { ...list, totalWeight: Number(totalWeight.toFixed(2)), totalPrice: Number(totalPrice.toFixed(2)) };
+    }
+  }
+
+  // Always use recalculated totals for summary table and list totals
+  const clothingTotals = recalcTotals(lists.clothing, 'clothing');
+  const cookingTotals = recalcTotals(lists.cooking, 'cooking');
+  const sleepingTotals = recalcTotals(lists.sleeping, 'sleeping');
+  const foodTotals = recalcTotals(lists.food, 'food');
+  const miscTotals = recalcTotals(lists.misc, 'misc');
 
   return (
     <div className="packlist-wizard">
@@ -356,28 +447,34 @@ export default function PackListWizard() {
                       <TableHead>
                         <TableRow>
                           <TableCell sx={{ whiteSpace: 'nowrap', py: 1, px: 2 }}><strong>Category</strong></TableCell>
-                          <TableCell align="right" sx={{ whiteSpace: 'nowrap', py: 1, px: 2 }}><strong>Weight (lbs)</strong></TableCell>
+                          <TableCell align="right" sx={{ whiteSpace: 'nowrap', py: 1, px: 2 }}><strong>Total Weight (lbs)</strong></TableCell>
+                          <TableCell align="right" sx={{ whiteSpace: 'nowrap', py: 1, px: 2 }}><strong>Max Weight (lbs)</strong></TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         <TableRow>
                           <TableCell sx={{ py: 1, px: 2 }}>Clothing</TableCell>
+                          <TableCell align="right" sx={{ py: 1, px: 2 }}>{clothingTotals.totalWeight || ''}</TableCell>
                           <TableCell align="right" sx={{ py: 1, px: 2 }}>{categoryWeights.clothingWeight}</TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell sx={{ py: 1, px: 2 }}>Cooking Equipment</TableCell>
+                          <TableCell align="right" sx={{ py: 1, px: 2 }}>{cookingTotals.totalWeight || ''}</TableCell>
                           <TableCell align="right" sx={{ py: 1, px: 2 }}>{categoryWeights.cookingWeight}</TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell sx={{ py: 1, px: 2 }}>Sleeping</TableCell>
+                          <TableCell align="right" sx={{ py: 1, px: 2 }}>{sleepingTotals.totalWeight || ''}</TableCell>
                           <TableCell align="right" sx={{ py: 1, px: 2 }}>{categoryWeights.sleepingWeight}</TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell sx={{ py: 1, px: 2 }}>Food</TableCell>
+                          <TableCell align="right" sx={{ py: 1, px: 2 }}>{foodTotals.totalWeight || ''}</TableCell>
                           <TableCell align="right" sx={{ py: 1, px: 2 }}>{categoryWeights.foodWeight}</TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell sx={{ py: 1, px: 2 }}>Misc</TableCell>
+                          <TableCell align="right" sx={{ py: 1, px: 2 }}>{miscTotals.totalWeight || ''}</TableCell>
                           <TableCell align="right" sx={{ py: 1, px: 2 }}>{categoryWeights.miscWeight}</TableCell>
                         </TableRow>
                       </TableBody>
@@ -427,11 +524,11 @@ export default function PackListWizard() {
             </Tabs>
           </Box>
           {/* Only show the selected tab's content */}
-          {listsTabIndex === 0 && <CategoryListCard title="Food List" list={lists.food} type="food" cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
-          {listsTabIndex === 1 && <CategoryListCard title="Clothing List" list={lists.clothing} type="clothing" cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
-          {listsTabIndex === 2 && <CategoryListCard title="Cooking List" list={lists.cooking} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
-          {listsTabIndex === 3 && <CategoryListCard title="Sleeping List" list={lists.sleeping} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
-          {listsTabIndex === 4 && step === 4 && <CategoryListCard title="Miscellaneous List" list={lists.misc} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
+          {listsTabIndex === 0 && <CategoryListCard title="Food List" list={foodTotals} type="food" cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
+          {listsTabIndex === 1 && <CategoryListCard title="Clothing List" list={clothingTotals} type="clothing" cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
+          {listsTabIndex === 2 && <CategoryListCard title="Cooking List" list={cookingTotals} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
+          {listsTabIndex === 3 && <CategoryListCard title="Sleeping List" list={sleepingTotals} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
+          {listsTabIndex === 4 && step === 4 && <CategoryListCard title="Miscellaneous List" list={miscTotals} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
           {step === 4 && (
             <Button variant="outlined" color="primary" sx={{ mt: 2 }}
               onClick={() => {

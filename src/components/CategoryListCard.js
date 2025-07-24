@@ -93,7 +93,7 @@ export default function CategoryListCard({ title, list, type, cardWidth }) {
                             maxWidth: { xs: 60, sm: 120 },
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                          }}>{dayObj[meal].Price}</TableCell>
+                          }}>{typeof dayObj[meal].Price === 'number' ? dayObj[meal].Price.toFixed(2) : (parseFloat(dayObj[meal].Price) || 0).toFixed(2)}</TableCell>
                           <TableCell align="right" sx={{
                             py: { xs: 0.5, sm: 1 },
                             px: { xs: 0.5, sm: 2 },
@@ -113,7 +113,7 @@ export default function CategoryListCard({ title, list, type, cardWidth }) {
           ))}
           <Typography variant="body2" sx={{ mt: 2 }}>
             <strong>Total Weight:</strong> {list.totalWeight} lbs<br />
-            <strong>Total Price:</strong> ${list.totalPrice}<br />
+            <strong>Total Price:</strong> ${typeof list.totalPrice === 'number' ? list.totalPrice.toFixed(2) : (parseFloat(list.totalPrice) || 0).toFixed(2)}<br />
             <strong>Total Calories:</strong> {list.totalCalories}
           </Typography>
         </CardContent>
@@ -172,7 +172,7 @@ export default function CategoryListCard({ title, list, type, cardWidth }) {
                       {col.key === 'item' ? (item.item || item.Item || '')
                         : col.key === 'quantity' ? (item.quantity !== undefined ? item.quantity : 1)
                         : col.key === 'weight' ? (item.weight || item.Weight || 0)
-                        : col.key === 'price' ? (item.price || item.Price || 0)
+                        : col.key === 'price' ? (typeof (item.price ?? item.Price) === 'number' ? (item.price ?? item.Price).toFixed(2) : (parseFloat(item.price ?? item.Price) || 0).toFixed(2))
                         : ''}
                     </TableCell>
                   ))}
