@@ -10,6 +10,12 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import TableContainer from '@mui/material/TableContainer';
+import Table from '@mui/material/Table';
+import TableHead from '@mui/material/TableHead';
+import TableBody from '@mui/material/TableBody';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
 // PackListWizard.js
 import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
@@ -333,13 +339,38 @@ export default function PackListWizard() {
               {categoryWeights && (
                 <>
                   <Typography variant="h6" sx={{ mb: 1 }}>Category Weights</Typography>
-                  <Box component="ul" sx={{ pl: 2, mb: 2 }}>
-                    <li>Clothing: {categoryWeights.clothingWeight} lbs</li>
-                    <li>Cooking Equipment: {categoryWeights.cookingWeight} lbs</li>
-                    <li>Sleeping: {categoryWeights.sleepingWeight} lbs</li>
-                    <li>Food: {categoryWeights.foodWeight} lbs</li>
-                    <li>Misc: {categoryWeights.miscWeight} lbs</li>
-                  </Box>
+                  <TableContainer sx={{ mb: 2 }}>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell sx={{ whiteSpace: 'nowrap', py: 1, px: 2 }}><strong>Category</strong></TableCell>
+                          <TableCell align="right" sx={{ whiteSpace: 'nowrap', py: 1, px: 2 }}><strong>Weight (lbs)</strong></TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell sx={{ py: 1, px: 2 }}>Clothing</TableCell>
+                          <TableCell align="right" sx={{ py: 1, px: 2 }}>{categoryWeights.clothingWeight}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ py: 1, px: 2 }}>Cooking Equipment</TableCell>
+                          <TableCell align="right" sx={{ py: 1, px: 2 }}>{categoryWeights.cookingWeight}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ py: 1, px: 2 }}>Sleeping</TableCell>
+                          <TableCell align="right" sx={{ py: 1, px: 2 }}>{categoryWeights.sleepingWeight}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ py: 1, px: 2 }}>Food</TableCell>
+                          <TableCell align="right" sx={{ py: 1, px: 2 }}>{categoryWeights.foodWeight}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell sx={{ py: 1, px: 2 }}>Misc</TableCell>
+                          <TableCell align="right" sx={{ py: 1, px: 2 }}>{categoryWeights.miscWeight}</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
                 </>
               )}
             </CardContent>

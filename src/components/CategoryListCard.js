@@ -21,6 +21,7 @@ export default function CategoryListCard({ title, list, type }) {
       { key: 'item', label: 'Item', align: 'left' },
       { key: 'weight', label: 'Weight (lbs)', align: 'right' },
       { key: 'price', label: 'Price ($)', align: 'right' },
+      { key: 'calories', label: 'Calories', align: 'right' },
     ];
     return (
       <Card sx={{ mb: 3, width: { xs: '100%', sm: '500px', md: '600px' }, maxWidth: '100%' }}>
@@ -33,15 +34,15 @@ export default function CategoryListCard({ title, list, type }) {
                 <Table size="small">
                   <TableHead>
                     <TableRow>
-                      {foodColumns.map(col => (
-                        <TableCell
-                          key={col.key}
-                          align={col.align}
-                          sx={{ whiteSpace: 'nowrap', py: 1, px: 2 }}
-                        >
-                          <strong>{col.label}</strong>
-                        </TableCell>
-                      ))}
+                    {foodColumns.map(col => (
+                      <TableCell
+                        key={col.key}
+                        align={col.align}
+                        sx={{ whiteSpace: 'nowrap', py: 1, px: 2 }}
+                      >
+                        <strong>{col.label}</strong>
+                      </TableCell>
+                    ))}
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -52,6 +53,7 @@ export default function CategoryListCard({ title, list, type }) {
                           <TableCell sx={{ py: 1, px: 2 }}>{dayObj[meal].Item}</TableCell>
                           <TableCell align="right">{dayObj[meal].Weight}</TableCell>
                           <TableCell align="right">{dayObj[meal].Price}</TableCell>
+                          <TableCell align="right">{dayObj[meal].Calories}</TableCell>
                         </TableRow>
                       ) : null
                     ))}
