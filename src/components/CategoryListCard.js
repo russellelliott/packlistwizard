@@ -44,9 +44,7 @@ export default function CategoryListCard({ title, list, type, cardWidth }) {
                             px: { xs: 0.5, sm: 2 },
                             fontSize: { xs: '0.80rem', sm: '0.95rem' },
                             minWidth: 0,
-                            maxWidth: { xs: 60, sm: 120 },
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
+                            overflow: 'visible',
                           }}
                         >
                           <strong>{col.label}</strong>
@@ -63,9 +61,7 @@ export default function CategoryListCard({ title, list, type, cardWidth }) {
                             px: { xs: 0.5, sm: 2 },
                             fontSize: { xs: '0.80rem', sm: '0.95rem' },
                             minWidth: 0,
-                            maxWidth: { xs: 60, sm: 120 },
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
+                            overflow: 'visible',
                           }}>{meal}</TableCell>
                           <TableCell sx={{
                             py: { xs: 0.5, sm: 1 },
@@ -136,9 +132,7 @@ export default function CategoryListCard({ title, list, type, cardWidth }) {
     whiteSpace: 'nowrap',
     fontSize: { xs: '0.80rem', sm: '0.95rem' },
     minWidth: 0,
-    maxWidth: { xs: 60, sm: 120 },
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    overflow: 'visible',
   };
 
   return (
@@ -167,7 +161,7 @@ export default function CategoryListCard({ title, list, type, cardWidth }) {
                     <TableCell
                       key={col.key}
                       align={col.align}
-                      sx={cellSx}
+                      sx={{ ...cellSx, ...(col.key === 'item' ? { maxWidth: 'none', overflow: 'visible', textOverflow: 'unset', whiteSpace: 'normal' } : {}) }}
                     >
                       {col.key === 'item' ? (item.item || item.Item || '')
                         : col.key === 'quantity' ? (item.quantity !== undefined ? item.quantity : 1)

@@ -436,8 +436,9 @@ export default function PackListWizard() {
           <Card sx={{ mb: 3, width: { xs: '100%', sm: '500px', md: '600px' }, maxWidth: '100%' }}>
             <CardContent>
               <Typography variant="h5" sx={{ mb: 2 }}>Pack Weight</Typography>
-              <Typography variant="body1" sx={{ mb: 2 }}>
+              <Typography variant="body1" sx={{ mb: 1 }}>
                 <strong>Max Backpack Weight:</strong> {getMaxBackpackWeight(Number(inputs.age), Number(inputs.weight)).toFixed(1)} lbs
+                <span style={{ marginLeft: 24 }}><strong>Total Price:</strong> ${[clothingTotals, cookingTotals, sleepingTotals, foodTotals, miscTotals].reduce((sum, cat) => sum + (cat.totalPrice || 0), 0).toFixed(2)}</span>
               </Typography>
               {categoryWeights && (
                 <>
@@ -476,6 +477,12 @@ export default function PackListWizard() {
                           <TableCell sx={{ py: 1, px: 2 }}>Misc</TableCell>
                           <TableCell align="right" sx={{ py: 1, px: 2 }}>{miscTotals.totalWeight || ''}</TableCell>
                           <TableCell align="right" sx={{ py: 1, px: 2 }}>{categoryWeights.miscWeight}</TableCell>
+                        </TableRow>
+                        {/* Total row for all categories */}
+                        <TableRow>
+                          <TableCell sx={{ py: 1, px: 2, fontWeight: 'bold' }}>Total</TableCell>
+                          <TableCell align="right" sx={{ py: 1, px: 2, fontWeight: 'bold' }}>{[clothingTotals, cookingTotals, sleepingTotals, foodTotals, miscTotals].reduce((sum, cat) => sum + (cat.totalWeight || 0), 0).toFixed(2)}</TableCell>
+                          <TableCell align="right" sx={{ py: 1, px: 2, fontWeight: 'bold' }}>{getMaxBackpackWeight(Number(inputs.age), Number(inputs.weight)).toFixed(1)}</TableCell>
                         </TableRow>
                       </TableBody>
                     </Table>
@@ -529,19 +536,7 @@ export default function PackListWizard() {
           {listsTabIndex === 2 && <CategoryListCard title="Cooking List" list={cookingTotals} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
           {listsTabIndex === 3 && <CategoryListCard title="Sleeping List" list={sleepingTotals} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
           {listsTabIndex === 4 && step === 4 && <CategoryListCard title="Miscellaneous List" list={miscTotals} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
-          {step === 4 && (
-            <Button variant="outlined" color="primary" sx={{ mt: 2 }}
-              onClick={() => {
-                setActivePage('form');
-                setStep(1);
-                setLists({ food: null, clothing: null, cooking: null, sleeping: null, misc: null });
-                setCategoryWeights(null);
-                setInputs(initialState);
-                setListsTabIndex(0);
-              }}>
-              Start Over
-            </Button>
-          )}
+          {/* Start Over button removed as requested */}
         </Box>
       )}
     </div>
