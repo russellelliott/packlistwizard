@@ -1,5 +1,18 @@
 // PackListWizard.js
 import React, { useState } from 'react';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import TextField from '@mui/material/TextField';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import Slider from '@mui/material/Slider';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
 import { useOpenAIApi } from '../hooks/useOpenAIApi';
 import { validateInputs, getMaxBackpackWeight } from '../utils/validation';
 // ...existing code...
@@ -30,6 +43,8 @@ export default function PackListWizard() {
   const [categoryWeights, setCategoryWeights] = useState(null);
   const { fetchOpenAIList, loading } = useOpenAIApi();
   const [step, setStep] = useState(1);
+  const [activePage, setActivePage] = useState('form');
+  const tabIndex = activePage === 'form' ? 0 : 1;
 
   const handleChange = e => {
     const { name, value, type } = e.target;
@@ -44,6 +59,9 @@ export default function PackListWizard() {
       toast.error('Please fix input errors.');
       return;
     }
+
+    // Immediately go to list page and disable button
+    setActivePage('list');
 
     // 1. Get pack weight
     const maxWeight = getMaxBackpackWeight(Number(inputs.age), Number(inputs.weight)).toFixed(1);
@@ -78,7 +96,6 @@ export default function PackListWizard() {
 
     setCategoryWeights({ clothingWeight, cookingWeight, sleepingWeight, foodWeight, miscWeight });
     setStep(2);
-
 
     // 3. Generate 4 main lists in parallel
     toast.info('Step 3: Generating food, clothing, cooking, and sleeping lists...');
@@ -124,89 +141,180 @@ export default function PackListWizard() {
   return (
     <div className="packlist-wizard">
       <ToastContainer />
-      {step === 1 && (
-        <form onSubmit={handleSubmit} className="wizard-form">
-          <h2>Pack List Wizard</h2>
-          {/* ...existing input fields... */}
-          <fieldset>
-            <legend>About You</legend>
-            <label>
-              Age:
-              <input type="number" name="age" value={inputs.age} onChange={handleChange} placeholder="years" required />
-              {errors.age && <span className="error">{errors.age}</span>}
-            </label>
-            <label>
-              Weight (lbs):
-              <input type="number" name="weight" value={inputs.weight} onChange={handleChange} placeholder="pounds" required />
-              {errors.weight && <span className="error">{errors.weight}</span>}
-            </label>
-            <label>
-              Sex:
-              <select name="sex" value={inputs.sex} onChange={handleChange} required>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              </select>
-            </label>
-          </fieldset>
-          <fieldset>
-            <legend>Your Hike</legend>
-            <label>
-              Length of Hike (days):
-              <input type="number" name="days" value={inputs.days} onChange={handleChange} placeholder="days" required />
-              {errors.days && <span className="error">{errors.days}</span>}
-            </label>
-            <label>
-              Season:
-              <select name="season" value={inputs.season} onChange={handleChange} required>
-                <option value="spring">Spring</option>
-                <option value="summer">Summer</option>
-                <option value="fall">Fall</option>
-              </select>
-            </label>
-            <label>
-              Average Elevation (ft):
-              <input type="range" name="avgElevation" min="0" max="15000" step="100" value={inputs.avgElevation} onChange={handleChange} />
-              <span>{inputs.avgElevation} ft</span>
-            </label>
-            <label>
-              Max Elevation (ft):
-              <input type="range" name="maxElevation" min="0" max="15000" step="100" value={inputs.maxElevation} onChange={handleChange} />
-              <span>{inputs.maxElevation} ft</span>
-            </label>
-          </fieldset>
-          <fieldset>
-            <legend>Personal Preferences</legend>
-            <label>
-              Pack Weight:
-              <select name="packweight" value={inputs.packweight} onChange={handleChange} required>
-                <option value="ultralight">Ultralight</option>
-                <option value="light">Light</option>
-                <option value="standard">Standard</option>
-                <option value="robust">Robust</option>
-              </select>
-            </label>
-            <label>
-              Diet:
-              <select name="diet" value={inputs.diet} onChange={handleChange} required>
-                <option value="flexible">No Restrictions</option>
-                <option value="vegetarian">Vegetarian</option>
-                <option value="vegan">Vegan</option>
-              </select>
-            </label>
-            <label>
-              Tent Capacity:
-              <select name="tentCapacity" value={inputs.tentCapacity} onChange={handleChange} required>
-                {[...Array(6)].map((_, i) => (
-                  <option key={i+1} value={i+1}>{i+1}</option>
-                ))}
-              </select>
-            </label>
-          </fieldset>
-          <button type="submit" disabled={loading}>Generate Pack List</button>
-          {loading && <div className="loading">Loading...</div>}
-        </form>
+      <Tabs value={tabIndex} onChange={(_, idx) => setActivePage(idx === 0 ? 'form' : 'list')} aria-label="Pack List Wizard Tabs">
+        <Tab label="User Form" />
+        <Tab label="Pack Lists" />
+      </Tabs>
+      {activePage === 'form' && (
+        <Box component="form" onSubmit={handleSubmit} className="wizard-form"
+          sx={{
+            mt: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}>
+          <Typography variant="h4" sx={{ mb: 3 }}>Pack List Wizard</Typography>
+          <Box sx={{ width: { xs: '100%', sm: '500px', md: '600px' }, maxWidth: '100%' }}>
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2 }}>About You</Typography>
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <TextField
+                    label="Age"
+                    type="number"
+                    name="age"
+                    value={inputs.age}
+                    onChange={handleChange}
+                    required
+                    error={!!errors.age}
+                    helperText={errors.age || 'years'}
+                  />
+                </FormControl>
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <TextField
+                    label="Weight (lbs)"
+                    type="number"
+                    name="weight"
+                    value={inputs.weight}
+                    onChange={handleChange}
+                    required
+                    error={!!errors.weight}
+                    helperText={errors.weight || 'pounds'}
+                  />
+                </FormControl>
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <InputLabel id="sex-label">Sex</InputLabel>
+                  <Select
+                    labelId="sex-label"
+                    name="sex"
+                    value={inputs.sex}
+                    label="Sex"
+                    onChange={handleChange}
+                    required
+                  >
+                    <MenuItem value="male">Male</MenuItem>
+                    <MenuItem value="female">Female</MenuItem>
+                  </Select>
+                </FormControl>
+              </CardContent>
+            </Card>
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2 }}>Your Hike</Typography>
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <TextField
+                    label="Length of Hike (days)"
+                    type="number"
+                    name="days"
+                    value={inputs.days}
+                    onChange={handleChange}
+                    required
+                    error={!!errors.days}
+                    helperText={errors.days || 'days'}
+                  />
+                </FormControl>
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <InputLabel id="season-label">Season</InputLabel>
+                  <Select
+                    labelId="season-label"
+                    name="season"
+                    value={inputs.season}
+                    label="Season"
+                    onChange={handleChange}
+                    required
+                  >
+                    <MenuItem value="spring">Spring</MenuItem>
+                    <MenuItem value="summer">Summer</MenuItem>
+                    <MenuItem value="fall">Fall</MenuItem>
+                  </Select>
+                </FormControl>
+                <Box sx={{ mb: 2 }}>
+                  <InputLabel shrink>Average Elevation (ft)</InputLabel>
+                  <Slider
+                    name="avgElevation"
+                    min={0}
+                    max={15000}
+                    step={100}
+                    value={inputs.avgElevation}
+                    onChange={handleChange}
+                    valueLabelDisplay="auto"
+                  />
+                  <span>{inputs.avgElevation} ft</span>
+                </Box>
+                <Box sx={{ mb: 2 }}>
+                  <InputLabel shrink>Max Elevation (ft)</InputLabel>
+                  <Slider
+                    name="maxElevation"
+                    min={0}
+                    max={15000}
+                    step={100}
+                    value={inputs.maxElevation}
+                    onChange={handleChange}
+                    valueLabelDisplay="auto"
+                  />
+                  <span>{inputs.maxElevation} ft</span>
+                </Box>
+              </CardContent>
+            </Card>
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Typography variant="h6" sx={{ mb: 2 }}>Personal Preferences</Typography>
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <InputLabel id="packweight-label">Pack Weight</InputLabel>
+                  <Select
+                    labelId="packweight-label"
+                    name="packweight"
+                    value={inputs.packweight}
+                    label="Pack Weight"
+                    onChange={handleChange}
+                    required
+                  >
+                    <MenuItem value="ultralight">Ultralight</MenuItem>
+                    <MenuItem value="light">Light</MenuItem>
+                    <MenuItem value="standard">Standard</MenuItem>
+                    <MenuItem value="robust">Robust</MenuItem>
+                  </Select>
+                </FormControl>
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <InputLabel id="diet-label">Diet</InputLabel>
+                  <Select
+                    labelId="diet-label"
+                    name="diet"
+                    value={inputs.diet}
+                    label="Diet"
+                    onChange={handleChange}
+                    required
+                  >
+                    <MenuItem value="flexible">No Restrictions</MenuItem>
+                    <MenuItem value="vegetarian">Vegetarian</MenuItem>
+                    <MenuItem value="vegan">Vegan</MenuItem>
+                  </Select>
+                </FormControl>
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <InputLabel id="tentCapacity-label">Tent Capacity</InputLabel>
+                  <Select
+                    labelId="tentCapacity-label"
+                    name="tentCapacity"
+                    value={inputs.tentCapacity}
+                    label="Tent Capacity"
+                    onChange={handleChange}
+                    required
+                  >
+                    {[...Array(6)].map((_, i) => (
+                      <MenuItem key={i+1} value={i+1}>{i+1}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </CardContent>
+            </Card>
+            <Button type="submit" variant="contained" color="primary" disabled={loading} sx={{ mt: 2, width: '100%' }}>
+              Generate Pack List
+            </Button>
+            {loading && <div className="loading">Loading...</div>}
+          </Box>
+        </Box>
       )}
-      {step >= 2 && (
+      {activePage === 'list' && (
         <div className="results-view">
           <h2>Pack Weight</h2>
           <div><strong>Max Backpack Weight:</strong> {getMaxBackpackWeight(Number(inputs.age), Number(inputs.weight)).toFixed(1)} lbs</div>
@@ -238,7 +346,7 @@ export default function PackListWizard() {
             <>
               <h3>Miscellaneous List</h3>
               <ul>{lists.misc?.items?.map((item, i) => <li key={i}>{JSON.stringify(item)}</li>)}</ul>
-              <button onClick={() => { setStep(1); setLists({ food: null, clothing: null, cooking: null, sleeping: null, misc: null }); setCategoryWeights(null); setInputs(initialState); }}>Start Over</button>
+              <button onClick={() => { setActivePage('form'); setStep(1); setLists({ food: null, clothing: null, cooking: null, sleeping: null, misc: null }); setCategoryWeights(null); setInputs(initialState); }}>Start Over</button>
             </>
           )}
         </div>
