@@ -362,7 +362,7 @@ export default function PackListWizard() {
           </Box>
           {/* Only show the selected tab's content */}
           {listsTabIndex === 0 && <CategoryListCard title="Food List" list={lists.food} type="food" />}
-          {listsTabIndex === 1 && <CategoryListCard title="Clothing List" list={lists.clothing} />}
+          {listsTabIndex === 1 && <CategoryListCard title="Clothing List" list={lists.clothing} type="clothing" />}
           {listsTabIndex === 2 && <CategoryListCard title="Cooking List" list={lists.cooking} />}
           {listsTabIndex === 3 && <CategoryListCard title="Sleeping List" list={lists.sleeping} />}
           {listsTabIndex === 4 && step === 4 && <CategoryListCard title="Miscellaneous List" list={lists.misc} />}
