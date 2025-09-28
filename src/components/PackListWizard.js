@@ -35,7 +35,6 @@ import FormControl from '@mui/material/FormControl';
 import Button from '@mui/material/Button';
 import Slider from '@mui/material/Slider';
 import { useOpenAIApi } from '../hooks/useOpenAIApi';
-import { useGeminiGroundedApi } from '../hooks/useGeminiGroundedApi';
 import { validateInputs, getMaxBackpackWeight } from '../utils/validation';
 // ...existing code...
 import { ToastContainer, toast } from 'react-toastify';
@@ -72,9 +71,6 @@ export default function PackListWizard() {
   const tabIndex = activePage === 'form' ? 0 : 1;
   // Add state for pack list tabs
   const [listsTabIndex, setListsTabIndex] = useState(0);
-  // State for Gemini links for each list
-  const [geminiLinks, setGeminiLinks] = useState({ food: [], clothing: [], cooking: [], sleeping: [], misc: [] });
-  const { fetchGeminiGroundedList } = useGeminiGroundedApi();
 
   const handleChange = e => {
     const { name, value, type } = e.target;
@@ -99,7 +95,6 @@ export default function PackListWizard() {
     toast.info('Step 1: Calculated pack weight.');
     setLists({ food: null, clothing: null, cooking: null, sleeping: null, misc: null });
     setCategoryWeights(null);
-    setGeminiLinks({ food: [], clothing: [], cooking: [], sleeping: [], misc: [] });
     setStep(1);
 
     // 2. Get category weights
@@ -189,35 +184,6 @@ export default function PackListWizard() {
     }));
     setStep(3);
 
-    // --- Gemini Grounded API for each list ---
-    // Helper to get a summary string for each list
-    const getListSummary = (list, type) => {
-      if (!list) return '';
-      if (type === 'food') {
-        return list.items?.map(dayObj =>
-          ['Breakfast', 'Lunch', 'Snack', 'Dinner'].map(meal => dayObj[meal]?.Item).filter(Boolean).join(', ')
-        ).join('; ');
-      } else {
-        return list.items?.map(item => item.item || item.Item).filter(Boolean).join(', ');
-      }
-    };
-    // For each list, send summary to Gemini with grounding
-    const geminiTasks = [
-      { key: 'food', title: 'Food', list: food, schema: require('../utils/listGenerators').foodListSchema },
-      { key: 'clothing', title: 'Clothing', list: clothing, schema: require('../utils/listGenerators').clothingListSchema },
-      { key: 'cooking', title: 'Cooking', list: cooking, schema: require('../utils/listGenerators').cookingListSchema },
-      { key: 'sleeping', title: 'Sleeping', list: sleeping, schema: require('../utils/listGenerators').sleepingListSchema },
-    ];
-    for (const { key, title, list, schema } of geminiTasks) {
-      if (!list) continue;
-      const summary = getListSummary(list, key);
-      const prompt = `Provide authoritative sources and links for the following backpacking ${title} list. List: ${summary}`;
-      fetchGeminiGroundedList(prompt, schema).then(({ json, links }) => {
-        console.log(`Gemini grounded result for ${key}:`, json);
-        setGeminiLinks(prev => ({ ...prev, [key]: links }));
-      });
-    }
-
     // 4. Generate misc list
     toast.info('Step 4: Generating miscellaneous list...');
     const miscPrompt = `List additional items for a ${params.days}-day backpacking trip, aiming for weight near ${miscWeight} lbs (min. ${(0.9 * miscWeight).toFixed(2)} lbs). Exclude clothing, cooking, sleeping, and food from previous lists. Output should be in this JSON format: {\"items\":[{\"item\":\"\",\"weight\":0,\"price\":0},...],\"totalWeight\":0,\"totalPrice\":0} Weight MUST be in pounds and price MUST be in $USD.`;
@@ -253,15 +219,6 @@ export default function PackListWizard() {
         misc: recalcTotals(misc, 'misc'),
       };
     });
-    // Also run Gemini for misc list
-    const miscSummary = misc?.items?.map(item => item.item || item.Item).filter(Boolean).join(', ');
-    if (miscSummary) {
-      const miscPrompt = `Provide authoritative sources and links for the following backpacking Miscellaneous list. List: ${miscSummary}`;
-      fetchGeminiGroundedList(miscPrompt, require('../utils/listGenerators').miscListSchema).then(({ json, links }) => {
-        console.log('Gemini grounded result for misc:', json);
-        setGeminiLinks(prev => ({ ...prev, misc: links }));
-      });
-    }
     setStep(4);
     toast.success('Pack lists generated!');
   };
@@ -582,11 +539,11 @@ export default function PackListWizard() {
             </Tabs>
           </Box>
           {/* Only show the selected tab's content */}
-          {listsTabIndex === 0 && <CategoryListCard title="Food List" list={foodTotals} type="food" cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} links={geminiLinks.food} />}
-          {listsTabIndex === 1 && <CategoryListCard title="Clothing List" list={clothingTotals} type="clothing" cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} links={geminiLinks.clothing} />}
-          {listsTabIndex === 2 && <CategoryListCard title="Cooking List" list={cookingTotals} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} links={geminiLinks.cooking} />}
-          {listsTabIndex === 3 && <CategoryListCard title="Sleeping List" list={sleepingTotals} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} links={geminiLinks.sleeping} />}
-          {listsTabIndex === 4 && step === 4 && <CategoryListCard title="Miscellaneous List" list={miscTotals} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} links={geminiLinks.misc} />}
+          {listsTabIndex === 0 && <CategoryListCard title="Food List" list={foodTotals} type="food" cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
+          {listsTabIndex === 1 && <CategoryListCard title="Clothing List" list={clothingTotals} type="clothing" cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
+          {listsTabIndex === 2 && <CategoryListCard title="Cooking List" list={cookingTotals} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
+          {listsTabIndex === 3 && <CategoryListCard title="Sleeping List" list={sleepingTotals} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
+          {listsTabIndex === 4 && step === 4 && <CategoryListCard title="Miscellaneous List" list={miscTotals} cardWidth={{ xs: '100%', sm: '650px', md: '900px' }} />}
           {/* Start Over button removed as requested */}
         </Box>
       )}

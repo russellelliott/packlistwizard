@@ -10,7 +10,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 
-export default function CategoryListCard({ title, list, type, cardWidth, links }) {
+export default function CategoryListCard({ title, list, type, cardWidth }) {
   if (!list) return null;
 
   // Food category: render by day and meal
@@ -112,18 +112,6 @@ export default function CategoryListCard({ title, list, type, cardWidth, links }
             <strong>Total Price:</strong> ${typeof list.totalPrice === 'number' ? list.totalPrice.toFixed(2) : (parseFloat(list.totalPrice) || 0).toFixed(2)}<br />
             <strong>Total Calories:</strong> {list.totalCalories}
           </Typography>
-          {Array.isArray(links) && links.length > 0 && (
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="subtitle2">Sources:</Typography>
-              <ul style={{ margin: 0, paddingLeft: 18 }}>
-                {links.map((link, i) => (
-                  <li key={i}>
-                    <a href={link.uri} target="_blank" rel="noopener noreferrer">{link.title || link.uri}</a>
-                  </li>
-                ))}
-              </ul>
-            </Box>
-          )}
         </CardContent>
       </Card>
     );
@@ -191,18 +179,6 @@ export default function CategoryListCard({ title, list, type, cardWidth, links }
           <strong>Total Weight:</strong> {list.totalWeight} lbs<br />
           <strong>Total Price:</strong> ${list.totalPrice}
         </Typography>
-        {Array.isArray(links) && links.length > 0 && (
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle2">Sources:</Typography>
-            <ul style={{ margin: 0, paddingLeft: 18 }}>
-              {links.map((link, i) => (
-                <li key={i}>
-                  <a href={link.uri} target="_blank" rel="noopener noreferrer">{link.title || link.uri}</a>
-                </li>
-              ))}
-            </ul>
-          </Box>
-        )}
       </CardContent>
     </Card>
   );
