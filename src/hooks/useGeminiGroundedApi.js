@@ -25,7 +25,35 @@ export function useGeminiGroundedApi() {
     let lastError = null;
     while (attempt <= maxRetries) {
       try {
-        const fullPrompt = `${prompt}\n\nRespond ONLY in strict JSON format as follows:\n${schema.description}\nExample:\n${JSON.stringify(schema.exampleJSON, null, 2)}`;
+        // Remove price and weight from all items, and calories from food items in the input JSON
+        let inputJson = '';
+        if (schema && schema.exampleJSON) {
+          function omitFields(obj) {
+            if (Array.isArray(obj)) {
+              return obj.map(omitFields);
+            } else if (typeof obj === 'object' && obj !== null) {
+              let newObj = { ...obj };
+              delete newObj.price;
+              delete newObj.Price;
+              delete newObj.weight;
+              delete newObj.Weight;
+              if ((newObj.category || newObj.Category || '').toLowerCase() === 'food') {
+                delete newObj.calories;
+                delete newObj.Calories;
+              }
+              // Recursively process nested objects/arrays
+              for (const key in newObj) {
+                if (typeof newObj[key] === 'object') {
+                  newObj[key] = omitFields(newObj[key]);
+                }
+              }
+              return newObj;
+            }
+            return obj;
+          }
+          inputJson = JSON.stringify(omitFields(schema.exampleJSON), null, 2);
+        }
+        const fullPrompt = `${prompt}\n\nHere is a JSON list of items. For each item, fill in the missing price (all items) and weight (all items) using authoritative sources. For food items, also fill in the caloric amount for one serving and the weight for one serving. Return ONLY valid JSON, with no markdown, no extra text, and no explanation. The output must be a valid JSON object.\nInput JSON:\n${inputJson}\n\nRespond ONLY in strict JSON format as follows:\n${schema.description}\nExample:\n${JSON.stringify(schema.exampleJSON, null, 2)}`;
         console.log('fetchGeminiGroundedList: prompt', fullPrompt);
         console.log('fetchGeminiGroundedList: schema', schema);
         response = await ai.models.generateContent({
@@ -103,12 +131,12 @@ export function useGeminiGroundedApi() {
         const match = weight.match(/([\d.]+)/);
         weight = match ? parseFloat(match[1]) : weight;
       }
-      // Attach link if provided
+      // Return item without link field
+      const { link: _omitLink, ...rest } = item;
       return {
-        ...item,
+        ...rest,
         quantity,
         weight,
-        link: link?.uri || undefined,
       };
     }
     let processed = json;
